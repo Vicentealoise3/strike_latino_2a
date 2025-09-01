@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tabla de posiciones</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <main class="container">
+    <header class="header">
+      <h1>Tabla de posiciones</h1>
+      <div class="meta">Última actualización: {{ last_updated }}</div>
+      <button class="refresh" onclick="location.reload()">Actualizar</button>
+    </header>
+
+    <section class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Equipo</th><th>Jugador</th><th>Prog(13)</th>
+            <th>JJ</th><th>W</th><th>L</th><th>Por jugar</th><th>Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ r.team }}</td>
+              <td>{{ r.user }}</td>
+              <td>{{ scheduled }}</td>
+              <td>{{ r.played }}</td>
+              <td>{{ r.wins }}</td>
+              <td>{{ r.losses }}</td>
+              <td>{{ r.remaining }}</td>
+              <td>{{ r.points }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+    <h2>Juegos jugados HOY (hora Chile)</h2>
+    <section class="card">
+      {% if games_today and games_today|length > 0 %}
+        <ol>
+          {% for line in games_today %}<li>{{ line }}</li>{% endfor %}
+        </ol>
+      {% else %}
+        <p>— No hay registros hoy —</p>
+      {% endif %}
+    </section>
+
+    <footer class="footer">© {{ last_updated[:4] }} Liga MLB The Show 25</footer>
+  </main>
+</body>
+</html>

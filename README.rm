@@ -1,0 +1,221 @@
+Strike Latino 2 – Standings + Juegos de Hoy
+Pequeña app en Flask que muestra la tabla de posiciones y el reporte de “Juegos jugados HOY (hora Chile)” para una liga de MLB The Show.
+Se apoya en un script que consulta la API pública de theshow.com, normaliza datos y evita duplicados (IDs alternos de jugadores y/o duplicados de la API).
+
+✨ Características
+Tabla de posiciones ordenada por Pts → W → L.
+
+Reporte de Juegos jugados HOY con hora convertida a America/Santiago.
+
+Switch de modo:
+
+DEBUG: “hoy” = día calendario (00:00–23:59), imprime capturas y genera JSON en out/.
+
+ONLINE: “hoy” = día deportivo (06:00–05:59), silencioso y sin dumps.
+
+Manejo de IDs alternativos por jugador (suma sin duplicar):
+
+Mapea cuentas alternas en FETCH_ALIASES.
+
+Deduplicación por id + deduplicación canónica (home, away, score, minuto) para “Juegos de hoy”.
+
+📁 Estructura
+cpp
+Copiar código
+.
+├─ app.py
+├─ standings_cascade_points_desc.py
+├─ templates/
+│  └─ index.html
+├─ static/
+│  └─ styles.css
+├─ requirements.txt
+├─ Procfile
+└─ .gitignore
+🔧 Configuración clave (en standings_cascade_points_desc.py)
+Modo de ejecución
+python
+Copiar código
+# "DEBUG" o "ONLINE"
+MODE = "ONLINE"
+DEBUG: útil en local; muestra resúmenes y crea JSON (carpeta out/).
+
+ONLINE: recomendado en producción; “Juegos de hoy” usa 06:00–05:59 y no genera dumps.
+
+Liga (jugadores y equipos)
+python
+Copiar código
+LEAGUE_ORDER = [
+    ("THELSURICATO", "Mets"),
+    # ...
+    ("Tu_Pauta2000", "Braves"),
+]
+Una sola fila por equipo. Si el mismo participante usa otras cuentas, NO agregues otra fila; usa FETCH_ALIASES.
+
+IDs alternativos (sumar sin duplicar)
+python
+Copiar código
+FETCH_ALIASES = {
+    "Tu_Pauta2000": ["Lachi_1991"],  # Braves: también juega con esta cuenta
+    # "OtroPrincipal": ["Alias1", "Alias2"],
+}
+El script descargará páginas del usuario principal y sus alias, las unirá, y deduplicará por id antes de computar W/L.
+
+Miembros de liga (filtro de pertenencia)
+Se construye automáticamente a partir de LEAGUE_ORDER + FETCH_ALIASES.
+Puedes añadir equivalencias históricas si aplican:
+
+python
+Copiar código
+LEAGUE_USERS.update({"AiramReynoso_", "Yosoyreynoso_"})
+Rango temporal y páginas
+python
+Copiar código
+SINCE = datetime(2025, 8, 30)    # fecha mínima de juegos a considerar
+PAGES = (1, 2, 3, 4, 5)          # páginas a leer por usuario/alias
+🖥️ Correr en local (Windows)
+Crear carpeta y copiar archivos:
+
+bat
+Copiar código
+mkdir C:\liga_local
+cd C:\liga_local
+Entorno virtual e instalación:
+
+bat
+Copiar código
+py -3 -m venv .venv
+.\.venv\Scripts\activate.bat
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+En Windows se necesita tzdata (ya está en requirements.txt) para la zona horaria “America/Santiago”.
+
+Ejecutar:
+
+bat
+Copiar código
+python app.py
+Abrir en el navegador:
+
+http://127.0.0.1:5000
+
+http://127.0.0.1:5000/api/debug_counts (verifica rows_count y games_today_count)
+
+Si el listado de “Juegos de hoy” aparece vacío tras medianoche, usa MODE="ONLINE" (día deportivo 06:00–05:59).
+
+🌐 Despliegue en Render
+GitHub: inicializa repo y sube:
+
+bat
+Copiar código
+git init
+git add .
+git commit -m "Primera versión lista para Render"
+git branch -M main
+git remote add origin https://github.com/TU_USUARIO/strike-latino-2.git
+git push -u origin main
+Render → New → Web Service → conecta tu repo.
+
+Environment: Python
+
+Build Command: pip install -r requirements.txt
+
+Start Command:
+
+bash
+Copiar código
+gunicorn app:app --workers 2 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT
+Activa Auto Deploys si quieres que se redeploye con cada git push.
+
+Prueba la URL pública:
+
+/ → página
+
+/api/debug_counts → verificación rápida
+
+🧪 Endpoints útiles
+/ – Renderiza la tabla y “Juegos de hoy”.
+
+/api/debug_counts – JSON con:
+
+rows_count (número de filas en la tabla)
+
+games_today_count (items en el reporte “hoy”)
+
+first_rows_keys (campos de la primera fila)
+
+🧠 Cómo evitamos duplicados
+W/L por equipo (compute_team_record_for_user):
+
+Se descargan juegos del usuario principal y sus alias (FETCH_ALIASES).
+
+Se une todo y se pasa por dedup_by_id (misma id → un solo juego).
+
+Se filtra liga + fecha + que participe el equipo correcto y que ambos sean miembros (o CPU+miembro).
+
+Juegos de hoy:
+
+Descargamos de todos (principales + alias).
+
+Deduplicación doble:
+
+Por id (si la API duplica el mismo juego en distintos historiales).
+
+Por clave canónica: (home, away, home_runs, away_runs, YYYY-MM-DD HH:MM), por si alguna vez la id también se repite o varía.
+
+🛠️ Troubleshooting
+Tabla vacía:
+
+Revisa SINCE (debe ser <= a la fecha real de tus primeros juegos).
+
+Verifica LEAGUE_ORDER (usernames exactos) y FETCH_ALIASES.
+
+No aparecen “Juegos de hoy”:
+
+Si ejecutas después de medianoche, usa MODE="ONLINE" (06:00–05:59).
+
+Confirma que ambos usernames del partido figuran como miembros (principal o alias).
+
+Lentitud / rate limit:
+
+Reduce PAGES a (1, 2) si no necesitas profundidad.
+
+Considera agregar caché en app.py (puedo pasarte snippet si lo necesitas).
+
+📜 Requisitos y Procfile
+requirements.txt:
+
+nginx
+Copiar código
+flask
+requests
+tzdata
+gunicorn
+Procfile:
+
+less
+Copiar código
+web: gunicorn app:app --workers 2 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT
+.gitignore (sugerido):
+
+csharp
+Copiar código
+.venv/
+__pycache__/
+*.pyc
+out/
+.vscode/
+.idea/
+✅ Checklist antes de publicar
+MODE = "ONLINE" en producción.
+
+FETCH_ALIASES actualizado (por ejemplo Tu_Pauta2000 → ["Lachi_1991"]).
+
+SINCE correcto para el torneo.
+
+PAGES ajustado a tu necesidad/rendimiento.
+
+Render levanta sin errores y /api/debug_counts responde.
+
+Licencia
+Este proyecto se distribuye tal cual para uso en tu liga. Añade una licencia si planeas abrirlo públicamente.

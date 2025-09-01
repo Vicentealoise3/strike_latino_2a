@@ -1,0 +1,48 @@
+el archivo ppal co nel 2 al final contiene la modificacion aun no probada 
+
+
+# ====== IDs alternativos por participante (para sumar sin duplicar) ======
+# Clave = username principal EXACTO en LEAGUE_ORDER; Valor = lista de cuentas alternas
+FETCH_ALIASES = {
+    # ejemplo real:
+    "Tu_Pauta2000": ["Lachi_1991"],  # Braves puede aparecer con esta otra cuenta
+    # agrega más si hace falta:
+    # "OtroPrincipal": ["Alias1", "Alias2"],
+}
+
+
+
+app - copia 
+standings_cascade_points_desc - copia
+son los archivos q inicialmente funcionaron tambien
+
+el repositorio se llama 
+strike_latino_2a
+
+
+
+Render → New → Web Service → conecta tu repo.
+
+Environment: Python
+
+Build Command: pip install -r requirements.txt
+
+Start Command:
+
+bash
+Copiar código
+gunicorn app:app --workers 2 --threads 4 --timeout 120 --bind 0.0.0.0:$PORT
+
+
+
+
+
+--------------------
+prueba local:
+py -3 -m venv .venv
+.\.venv\Scripts\activate.bat
+python -m pip install --upgrade pip
+python -m pip install flask requests tzdata
+
+cargar el app.py 
+visitar: 127.0.0.1:5000
