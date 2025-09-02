@@ -1,6 +1,6 @@
 # standings_cascade_points.py
 # Tabla de posiciones (2 páginas por jugador) con columnas:
-# Pos | Equipo | Jugador | Prog(26) | JJ | W | L | Por jugar | Pts
+# Pos | Equipo | Jugador | Prog(13) | JJ | W | L | Por jugar | Pts
 # Reglas: LEAGUE + fecha, filtro (ambos miembros) o (CPU + miembro), dedup por id, ajustes algebraicos.
 # Orden: por puntos (desc). Empates: por W (desc), luego L (asc).
 
@@ -270,7 +270,7 @@ def compute_team_record_for_user(username_exact: str, team_name: str):
     wins_adj, losses_adj = wins + adj_w, losses + adj_l
 
     # 5) Puntos y métricas de tabla
-    scheduled = 26
+    scheduled = 13
     played = max(wins_adj + losses_adj, 0)
     remaining = max(scheduled - played, 0)
     points_base = 3 * wins_adj + 2 * losses_adj
