@@ -1,6 +1,6 @@
 # standings_cascade_points.py
 # Tabla de posiciones (2 páginas por jugador) con columnas:
-# Pos | Equipo | Jugador | Prog(13) | JJ | W | L | Por jugar | Pts
+# Pos | Equipo | Jugador | Prog(26) | JJ | W | L | Por jugar | Pts
 # Reglas: LEAGUE + fecha, filtro (ambos miembros) o (CPU + miembro), dedup por id, ajustes algebraicos.
 # Orden: por puntos (desc). Empates: por W (desc), luego L (asc).
 
@@ -270,7 +270,7 @@ def compute_team_record_for_user(username_exact: str, team_name: str):
     wins_adj, losses_adj = wins + adj_w, losses + adj_l
 
     # 5) Puntos y métricas de tabla
-    scheduled = 13
+    scheduled = 26
     played = max(wins_adj + losses_adj, 0)
     remaining = max(scheduled - played, 0)
     points_base = 3 * wins_adj + 2 * losses_adj
@@ -403,20 +403,15 @@ def games_played_today_scl():
     Arreglos:
       - Si la fecha viene sin tz, se asume UTC y se convierte a America/Santiago.
       - Deduplicación por id y por una clave canónica (home, away, hr, ar, yyyy-mm-dd HH:MM).
-      - Se requiere que AMBOS participantes pertenezcan a la liga.
+      - Se requiere que AMBOS participantes pertenezcan a la liga, o CPU + miembro.
     """
     tz_scl = ZoneInfo("America/Santiago")
     tz_utc = ZoneInfo("UTC")
     today_local = datetime.now(tz_scl).date()
 
-    # Traer páginas de TODOS los usuarios (principales + alias)
-    usernames_pool = {u for (u, _t) in LEAGUE_ORDER}
-    for base, alts in FETCH_ALIASES.items():
-        usernames_pool.add(base)
-        usernames_pool.update(alts)
-
+    # Traer páginas p1 y p2 de todos los usuarios de la liga
     all_pages = []
-    for username_exact in usernames_pool:
+    for username_exact, _team in LEAGUE_ORDER:
         for p in PAGES:
             all_pages += fetch_page(username_exact, p)
 
@@ -441,12 +436,16 @@ def games_played_today_scl():
         if d_local.date() != today_local:
             continue
 
-        # Ambos jugadores deben pertenecer a la liga
+        # Ambos jugadores deben pertenecer a la liga, o CPU + miembro
         home_name_raw = (g.get("home_name") or "")
         away_name_raw = (g.get("away_name") or "")
         h_norm = normalize_user_for_compare(home_name_raw)
         a_norm = normalize_user_for_compare(away_name_raw)
-        if not (h_norm in LEAGUE_USERS_NORM and a_norm in LEAGUE_USERS_NORM):
+
+        h_mem = h_norm in LEAGUE_USERS_NORM
+        a_mem = a_norm in LEAGUE_USERS_NORM
+
+        if not ((h_mem and a_mem) or (is_cpu(home_name_raw) and a_mem) or (is_cpu(away_name_raw) and h_mem)):
             continue
 
         # Dedup por id
