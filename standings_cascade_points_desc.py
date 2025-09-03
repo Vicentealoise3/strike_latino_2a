@@ -400,10 +400,10 @@ def games_played_today_scl():
     """
     Lista juegos del DÍA (America/Santiago) en formato:
       'Yankees 1 - Brewers 2  - 30-08-2025 - 3:28 pm (hora Chile)'
-    Arreglos:
+    Mejoras:
+      - Deduplicación por id y también por (equipos, runs, pitcher_info).
       - Si la fecha viene sin tz, se asume UTC y se convierte a America/Santiago.
-      - Deduplicación por id y por una clave canónica (home, away, hr, ar, yyyy-mm-dd HH:MM).
-      - Se requiere que AMBOS participantes pertenezcan a la liga, o CPU + miembro.
+      - Se requiere que AMBOS participantes pertenezcan a la liga.
     """
     tz_scl = ZoneInfo("America/Santiago")
     tz_utc = ZoneInfo("UTC")
@@ -417,7 +417,7 @@ def games_played_today_scl():
 
     # Deduplicadores
     seen_ids = set()
-    seen_keys = set()  # (home, away, hr, ar, 'YYYY-MM-DD HH:MM')
+    seen_keys = set()  # (home, away, hr, ar, pitcher_info)
     items = []
 
     for g in dedup_by_id(all_pages):
@@ -436,16 +436,12 @@ def games_played_today_scl():
         if d_local.date() != today_local:
             continue
 
-        # Ambos jugadores deben pertenecer a la liga, o CPU + miembro
+        # Ambos jugadores deben pertenecer a la liga
         home_name_raw = (g.get("home_name") or "")
         away_name_raw = (g.get("away_name") or "")
         h_norm = normalize_user_for_compare(home_name_raw)
         a_norm = normalize_user_for_compare(away_name_raw)
-
-        h_mem = h_norm in LEAGUE_USERS_NORM
-        a_mem = a_norm in LEAGUE_USERS_NORM
-
-        if not ((h_mem and a_mem) or (is_cpu(home_name_raw) and a_mem) or (is_cpu(away_name_raw) and h_mem)):
+        if not (h_norm in LEAGUE_USERS_NORM and a_norm in LEAGUE_USERS_NORM):
             continue
 
         # Dedup por id
@@ -457,12 +453,11 @@ def games_played_today_scl():
         away = (g.get("away_full_name") or "").strip()
         hr = str(g.get("home_runs") or "0")
         ar = str(g.get("away_runs") or "0")
+        pitcher_info = (g.get("display_pitcher_info") or "").strip()
 
-        # Clave canónica por minuto (YYYY-MM-DD HH:MM)
-        minute_key = d_local.strftime("%Y-%m-%d %H:%M")
-        canon_key = (home, away, hr, ar, minute_key)
+        # Clave canónica más robusta
+        canon_key = (home, away, hr, ar, pitcher_info)
         if canon_key in seen_keys:
-            # Ya mostramos este juego con otra 'id' duplicada
             continue
 
         # Marcar vistos
@@ -480,5 +475,9 @@ def games_played_today_scl():
 
     items.sort(key=lambda x: x[0])
     return [s for _, s in items]
+
+
+# ====== FIN DEL BLOQUE ======
+
 
 # ====== FIN DEL BLOQUE ======
