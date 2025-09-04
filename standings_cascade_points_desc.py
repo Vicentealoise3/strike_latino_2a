@@ -95,7 +95,7 @@ LEAGUE_ORDER = [
     ("WILZULIA", "Royals"),
     ("Daviddiaz030425", "Guardians"),
     ("Juanchojs28", "Giants"),
-    ("Dev Read", "Marlins"),
+    ("me_dicencarlitos", "Marlins"),
     ("Bufon3-0", "Athletics"),
     ("edwar13-21", "Blue Jays"),
     ("mrguerrillas", "Pirates"),
@@ -481,3 +481,4 @@ def games_played_today_scl():
 
 
 # ====== FIN DEL BLOQUE ======
+
