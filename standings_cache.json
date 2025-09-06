@@ -4,12 +4,26 @@
       "user": "havanavcr10",
       "team": "Brewers",
       "scheduled": 13,
-      "played": 8,
-      "wins": 6,
-      "losses": 2,
-      "remaining": 5,
-      "points": 22,
-      "points_base": 22,
+      "played": 10,
+      "wins": 7,
+      "losses": 3,
+      "remaining": 3,
+      "points": 27,
+      "points_base": 27,
+      "points_extra": 0,
+      "points_reason": "",
+      "detail": []
+    },
+    {
+      "user": "Juanchojs28",
+      "team": "Giants",
+      "scheduled": 13,
+      "played": 5,
+      "wins": 2,
+      "losses": 3,
+      "remaining": 8,
+      "points": 12,
+      "points_base": 12,
       "points_extra": 0,
       "points_reason": "",
       "detail": []
@@ -24,20 +38,6 @@
       "remaining": 9,
       "points": 11,
       "points_base": 11,
-      "points_extra": 0,
-      "points_reason": "",
-      "detail": []
-    },
-    {
-      "user": "Juanchojs28",
-      "team": "Giants",
-      "scheduled": 13,
-      "played": 4,
-      "wins": 2,
-      "losses": 2,
-      "remaining": 9,
-      "points": 10,
-      "points_base": 10,
       "points_extra": 0,
       "points_reason": "",
       "detail": []
@@ -59,6 +59,20 @@
     {
       "user": "THELSURICATO",
       "team": "Mets",
+      "scheduled": 13,
+      "played": 3,
+      "wins": 2,
+      "losses": 1,
+      "remaining": 10,
+      "points": 8,
+      "points_base": 8,
+      "points_extra": 0,
+      "points_reason": "",
+      "detail": []
+    },
+    {
+      "user": "edwar13-21",
+      "team": "Blue Jays",
       "scheduled": 13,
       "played": 3,
       "wins": 2,
@@ -94,20 +108,6 @@
       "remaining": 10,
       "points": 6,
       "points_base": 6,
-      "points_extra": 0,
-      "points_reason": "",
-      "detail": []
-    },
-    {
-      "user": "edwar13-21",
-      "team": "Blue Jays",
-      "scheduled": 13,
-      "played": 2,
-      "wins": 1,
-      "losses": 1,
-      "remaining": 11,
-      "points": 5,
-      "points_base": 5,
       "points_extra": 0,
       "points_reason": "",
       "detail": []
@@ -198,7 +198,7 @@
     }
   ],
   "games_today": [
-    "Reds 0 - Brewers 4  - 05-09-2025 - 1:26 am (hora Chile)",
-    "Brewers 3 - Marlins 0  - 05-09-2025 - 10:06 pm (hora Chile)"
+    "Brewers 8 - Giants 1  - 06-09-2025 - 12:34 am (hora Chile)",
+    "Blue Jays 4 - Brewers 2  - 06-09-2025 - 3:31 pm (hora Chile)"
   ]
 }
