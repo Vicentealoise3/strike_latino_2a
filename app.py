@@ -1,59 +1,87 @@
-import threading
-import time
+# app.py
 from flask import Flask, render_template, jsonify
-from standings_cascade_points_desc import calculate_standings, get_games_today
+import json, threading, time, os
+from datetime import datetime
 
 app = Flask(__name__)
 
-# Aquí guardamos los datos en memoria
-standings_cache = []
-games_today_cache = []
+CACHE_FILE = "standings_cache.json"
+CACHE_INTERVAL_SEC = 300  # 5 minutos
 
-# -----------------------------
-# 🔹 Función que actualiza la caché
-# -----------------------------
-def update_cache():
-    global standings_cache, games_today_cache
-    try:
-        standings_cache = calculate_standings()
-        games_today_cache = get_games_today()
-        print("[OK] Cache actualizada")
-    except Exception as e:
-        print("[ERROR] al actualizar cache:", e)
+# ==========================
+# AQUÍ PEGAS TU LÓGICA REAL DE update_cache.py
+# (bajar datos de la API, procesar y guardar en standings_cache.json)
+# ==========================
+def actualizar_cache():
+    """
+    Reemplaza el contenido de este ejemplo por tu lógica real.
+    Debe escribir un JSON en CACHE_FILE con al menos:
+      {
+        "standings": [...],
+        "games_today": [...],
+        "last_update": "2025-09-06 12:34:56"
+      }
+    """
+    print("[cache] Actualizando cache...")
+    datos = {
+        "standings": [
+            # EJEMPLO — remplázalo por los standings reales
+            {"team": "Yankees", "user": "demo", "played": 15, "wins": 10, "losses": 5, "remaining": 33, "points": 25}
+        ],
+        "games_today": [
+            # EJEMPLO — remplázalo por la lista real de juegos de hoy
+            "Yankees 4 - Red Sox 2 - 06-09-2025 - 11:10 am (hora Chile)"
+        ],
+        "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    }
+    with open(CACHE_FILE, "w", encoding="utf-8") as f:
+        json.dump(datos, f, ensure_ascii=False, indent=2)
+    print("[cache] OK")
 
-# -----------------------------
-# 🔹 Hilo en segundo plano que repite cada 5 min
-# -----------------------------
-def updater_loop():
+def tarea_recurrente():
+    """Hilo en segundo plano que refresca el cache cada X minutos."""
     while True:
-        update_cache()
-        time.sleep(300)  # 300 segundos = 5 minutos
+        try:
+            actualizar_cache()
+        except Exception as e:
+            print(f"[cache] Error: {e}")
+        time.sleep(CACHE_INTERVAL_SEC)
 
-# -----------------------------
-# 🔹 Rutas de la web
-# -----------------------------
+# Nota: en Gunicorn no se ejecuta el bloque __main__, por eso usamos este hook.
+@app.before_first_request
+def iniciar_hilo_cache():
+    # 1) Crear el cache una vez (rápido) para que la página tenga algo que mostrar
+    try:
+        if not os.path.exists(CACHE_FILE):
+            actualizar_cache()
+    except Exception as e:
+        print(f"[cache] Error inicial: {e}")
+
+    # 2) Lanzar el hilo recurrente (daemon)
+    hilo = threading.Thread(target=tarea_recurrente, daemon=True)
+    hilo.start()
+    print("[cache] Hilo recurrente iniciado")
+
+# ==========================
+# RUTAS
+# ==========================
 @app.route("/")
 def index():
+    # Renderiza la plantilla; tu index.html hará fetch a /api/full si así lo tienes
     return render_template("index.html")
 
-@app.route("/api/standings")
-def api_standings():
-    return jsonify(standings_cache)
+@app.route("/api/full")
+def api_full():
+    if not os.path.exists(CACHE_FILE):
+        return jsonify({"error": "Cache no disponible"}), 503
+    try:
+        with open(CACHE_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-@app.route("/api/games_today")
-def api_games_today():
-    return jsonify(games_today_cache)
-
-# -----------------------------
-# 🔹 Inicio de la app
-# -----------------------------
+# Para correr localmente con `python app.py`
 if __name__ == "__main__":
-    # Primero actualizamos la cache una vez
-    update_cache()
-
-    # Arrancamos el hilo que actualiza cada 5 minutos
-    t = threading.Thread(target=updater_loop, daemon=True)
-    t.start()
-
-    # Iniciar Flask
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
