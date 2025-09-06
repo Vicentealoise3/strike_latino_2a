@@ -4,12 +4,12 @@
       "user": "havanavcr10",
       "team": "Brewers",
       "scheduled": 13,
-      "played": 7,
-      "wins": 5,
+      "played": 8,
+      "wins": 6,
       "losses": 2,
-      "remaining": 6,
-      "points": 19,
-      "points_base": 19,
+      "remaining": 5,
+      "points": 22,
+      "points_base": 22,
       "points_extra": 0,
       "points_reason": "",
       "detail": []
@@ -127,6 +127,20 @@
       "detail": []
     },
     {
+      "user": "me_dicencarlitos",
+      "team": "Marlins",
+      "scheduled": 13,
+      "played": 2,
+      "wins": 0,
+      "losses": 2,
+      "remaining": 11,
+      "points": 4,
+      "points_base": 4,
+      "points_extra": 0,
+      "points_reason": "",
+      "detail": []
+    },
+    {
       "user": "Tu_Pauta2000",
       "team": "Braves",
       "scheduled": 13,
@@ -169,20 +183,6 @@
       "detail": []
     },
     {
-      "user": "me_dicencarlitos",
-      "team": "Marlins",
-      "scheduled": 13,
-      "played": 1,
-      "wins": 0,
-      "losses": 1,
-      "remaining": 12,
-      "points": 2,
-      "points_base": 2,
-      "points_extra": 0,
-      "points_reason": "",
-      "detail": []
-    },
-    {
       "user": "zancudo99",
       "team": "Rangers",
       "scheduled": 13,
@@ -198,6 +198,7 @@
     }
   ],
   "games_today": [
-    "Reds 0 - Brewers 4  - 05-09-2025 - 1:26 am (hora Chile)"
+    "Reds 0 - Brewers 4  - 05-09-2025 - 1:26 am (hora Chile)",
+    "Brewers 3 - Marlins 0  - 05-09-2025 - 10:06 pm (hora Chile)"
   ]
 }
