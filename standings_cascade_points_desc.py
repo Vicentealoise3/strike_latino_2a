@@ -101,6 +101,7 @@ LEAGUE_ORDER = [
     ("mrguerrillas", "Pirates"),
     ("Diamondmanager", "Astros"),
     ("Tu_Pauta2000", "Braves"),
+    ("aloise6262", "Diamondbacks"),
 ]
 
 # ====== IDs alternativos por participante (para sumar sin duplicar) ======
