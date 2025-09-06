@@ -17,11 +17,10 @@ def actualizar_cache():
     """
     print("[cache] Actualizando cache...")
     try:
-        # Importar aquí para evitar problemas de ciclo de importación
         import standings_cascade_points_desc as standings
 
-        rows = standings.compute_rows()            # tabla de posiciones
-        juegos_hoy = standings.games_played_today_scl()  # lista de juegos del “día” (según tu config)
+        rows = standings.compute_rows()                  # tabla de posiciones
+        juegos_hoy = standings.games_played_today_scl()  # juegos del “día” (Chile)
 
         datos = {
             "standings": rows,
@@ -40,27 +39,36 @@ def tarea_recurrente():
         actualizar_cache()
         time.sleep(CACHE_INTERVAL_SEC)
 
-# En Gunicorn no se ejecuta el bloque __main__, por eso usamos este hook.
-@app.before_first_request
-def iniciar_hilo_cache():
-    # 1) Crear el cache una vez (rápido) para que la página tenga algo que mostrar
-    try:
-        if not os.path.exists(CACHE_FILE):
-            actualizar_cache()
-    except Exception as e:
-        print(f"[cache] Error inicial: {e}")
+# ===== Iniciar el hilo de caché SIN decoradores (compatible con Render/Gunicorn) =====
+_bg_started = False
+_bg_lock = threading.Lock()
 
-    # 2) Lanzar el hilo recurrente (daemon)
-    hilo = threading.Thread(target=tarea_recurrente, daemon=True)
-    hilo.start()
-    print("[cache] Hilo recurrente iniciado")
+def _start_background_updater():
+    global _bg_started
+    with _bg_lock:
+        if _bg_started:
+            return
+        # 1) Generar cache inicial si no existe (así /api/full tiene algo)
+        try:
+            if not os.path.exists(CACHE_FILE):
+                actualizar_cache()
+        except Exception as e:
+            print(f"[cache] Error inicial: {e}")
+
+        # 2) Lanzar el hilo daemon
+        t = threading.Thread(target=tarea_recurrente, daemon=True)
+        t.start()
+        _bg_started = True
+        print("[cache] Hilo recurrente iniciado")
+
+# Llamamos al iniciador en import time (cada worker de gunicorn tendrá su hilo, está bien)
+_start_background_updater()
 
 # ==========================
 # RUTAS
 # ==========================
 @app.route("/")
 def index():
-    # Tu index.html puede hacer fetch a /api/full
     return render_template("index.html")
 
 @app.route("/api/full")
