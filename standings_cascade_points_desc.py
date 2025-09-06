@@ -117,6 +117,7 @@ FETCH_ALIASES = {
 TEAM_RECORD_ADJUSTMENTS = {
     "Blue Jays": (0, -1),
       "Brewers": (-1, 0),
+      "Diamondbacks": (3, 1),
     # agrega más si hace falta
 }
 
