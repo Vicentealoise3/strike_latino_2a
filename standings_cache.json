@@ -43,6 +43,34 @@
       "detail": []
     },
     {
+      "user": "aloise6262",
+      "team": "Diamondbacks",
+      "scheduled": 13,
+      "played": 4,
+      "wins": 3,
+      "losses": 1,
+      "remaining": 9,
+      "points": 11,
+      "points_base": 11,
+      "points_extra": 0,
+      "points_reason": "",
+      "detail": []
+    },
+    {
+      "user": "edwar13-21",
+      "team": "Blue Jays",
+      "scheduled": 13,
+      "played": 4,
+      "wins": 2,
+      "losses": 2,
+      "remaining": 9,
+      "points": 10,
+      "points_base": 10,
+      "points_extra": 0,
+      "points_reason": "",
+      "detail": []
+    },
+    {
       "user": "WILZULIA",
       "team": "Royals",
       "scheduled": 13,
@@ -59,20 +87,6 @@
     {
       "user": "THELSURICATO",
       "team": "Mets",
-      "scheduled": 13,
-      "played": 3,
-      "wins": 2,
-      "losses": 1,
-      "remaining": 10,
-      "points": 8,
-      "points_base": 8,
-      "points_extra": 0,
-      "points_reason": "",
-      "detail": []
-    },
-    {
-      "user": "edwar13-21",
-      "team": "Blue Jays",
       "scheduled": 13,
       "played": 3,
       "wins": 2,
@@ -108,6 +122,20 @@
       "remaining": 10,
       "points": 6,
       "points_base": 6,
+      "points_extra": 0,
+      "points_reason": "",
+      "detail": []
+    },
+    {
+      "user": "Daviddiaz030425",
+      "team": "Guardians",
+      "scheduled": 13,
+      "played": 2,
+      "wins": 1,
+      "losses": 1,
+      "remaining": 11,
+      "points": 5,
+      "points_base": 5,
       "points_extra": 0,
       "points_reason": "",
       "detail": []
@@ -169,20 +197,6 @@
       "detail": []
     },
     {
-      "user": "Daviddiaz030425",
-      "team": "Guardians",
-      "scheduled": 13,
-      "played": 1,
-      "wins": 0,
-      "losses": 1,
-      "remaining": 12,
-      "points": 2,
-      "points_base": 2,
-      "points_extra": 0,
-      "points_reason": "",
-      "detail": []
-    },
-    {
       "user": "zancudo99",
       "team": "Rangers",
       "scheduled": 13,
@@ -199,6 +213,7 @@
   ],
   "games_today": [
     "Brewers 8 - Giants 1  - 06-09-2025 - 12:34 am (hora Chile)",
-    "Blue Jays 4 - Brewers 2  - 06-09-2025 - 3:31 pm (hora Chile)"
+    "Blue Jays 4 - Brewers 2  - 06-09-2025 - 3:31 pm (hora Chile)",
+    "Guardians 2 - Blue Jays 0  - 06-09-2025 - 4:18 pm (hora Chile)"
   ]
 }
