@@ -1,88 +1,62 @@
-# app.py
 from flask import Flask, render_template, jsonify
-import json, threading, time, os
-from datetime import datetime
+import json
+import os
+from datetime import datetime, timedelta
+import pytz
+
+from standings_cascade_points_desc import compute_rows, games_played_today_scl
 
 app = Flask(__name__)
 
-CACHE_FILE = "standings_cache.json"
-CACHE_INTERVAL_SEC = 300  # 5 minutos
+CACHE_TTL = 60 * 5  # 5 minutos
+CACHE = {
+    "rows": None,
+    "last_update": datetime.min
+}
 
-# ==========================
-# LÓGICA DE ACTUALIZACIÓN DE CACHÉ
-# ==========================
-def actualizar_cache():
-    """
-    Llama a tu módulo de standings, arma el JSON y lo guarda en disco.
-    """
-    print("[cache] Actualizando cache...")
-    try:
-        import standings_cascade_points_desc as standings
+# --------------------------
+# Manejo de caché en memoria
+# --------------------------
+def get_cached_standings():
+    global CACHE
+    now = datetime.now()
+    if CACHE["rows"] is None or (now - CACHE["last_update"]).total_seconds() > CACHE_TTL:
+        rows = compute_rows()
+        CACHE["rows"] = rows
+        CACHE["last_update"] = now
+        print(f"[CACHE] Refrescado en {now}")
+    return CACHE["rows"]
 
-        rows = standings.compute_rows()                  # tabla de posiciones
-        juegos_hoy = standings.games_played_today_scl()  # juegos del “día” (Chile)
-
-        datos = {
-            "standings": rows,
-            "games_today": juegos_hoy,
-            "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        }
-        with open(CACHE_FILE, "w", encoding="utf-8") as f:
-            json.dump(datos, f, ensure_ascii=False, indent=2)
-        print("[cache] OK")
-    except Exception as e:
-        print(f"[cache] Error: {e}")
-
-def tarea_recurrente():
-    """Hilo en segundo plano que refresca el cache cada X minutos."""
-    while True:
-        actualizar_cache()
-        time.sleep(CACHE_INTERVAL_SEC)
-
-# ===== Iniciar el hilo de caché SIN decoradores (compatible con Render/Gunicorn) =====
-_bg_started = False
-_bg_lock = threading.Lock()
-
-def _start_background_updater():
-    global _bg_started
-    with _bg_lock:
-        if _bg_started:
-            return
-        # 1) Generar cache inicial si no existe (así /api/full tiene algo)
-        try:
-            if not os.path.exists(CACHE_FILE):
-                actualizar_cache()
-        except Exception as e:
-            print(f"[cache] Error inicial: {e}")
-
-        # 2) Lanzar el hilo daemon
-        t = threading.Thread(target=tarea_recurrente, daemon=True)
-        t.start()
-        _bg_started = True
-        print("[cache] Hilo recurrente iniciado")
-
-# Llamamos al iniciador en import time (cada worker de gunicorn tendrá su hilo, está bien)
-_start_background_updater()
-
-# ==========================
-# RUTAS
-# ==========================
+# --------------------------
+# Rutas Flask
+# --------------------------
 @app.route("/")
 def index():
     return render_template("index.html")
 
-@app.route("/api/full")
-def api_full():
-    if not os.path.exists(CACHE_FILE):
-        return jsonify({"error": "Cache no disponible"}), 503
+@app.route("/api/standings")
+def api_standings():
+    rows = get_cached_standings()
+    return jsonify({
+        "rows": rows,
+        "last_refresh": CACHE["last_update"].strftime("%Y-%m-%d %H:%M:%S")
+    })
+
+@app.route("/api/games_today")
+def api_games_today():
     try:
-        with open(CACHE_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        return jsonify(data)
+        games = games_played_today_scl()
+        return jsonify(games)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Para correr localmente con `python app.py`
+# --------------------------
+# Mantener la caché activa en Render
+# --------------------------
+@app.before_request
+def refresh_cache_background():
+    """Forza a que la caché se actualice si ya venció"""
+    get_cached_standings()
+
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(debug=True)
