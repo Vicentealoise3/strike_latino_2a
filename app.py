@@ -9,45 +9,38 @@ CACHE_FILE = "standings_cache.json"
 CACHE_INTERVAL_SEC = 300  # 5 minutos
 
 # ==========================
-# AQUÍ PEGAS TU LÓGICA REAL DE update_cache.py
-# (bajar datos de la API, procesar y guardar en standings_cache.json)
+# LÓGICA DE ACTUALIZACIÓN DE CACHÉ
 # ==========================
 def actualizar_cache():
     """
-    Reemplaza el contenido de este ejemplo por tu lógica real.
-    Debe escribir un JSON en CACHE_FILE con al menos:
-      {
-        "standings": [...],
-        "games_today": [...],
-        "last_update": "2025-09-06 12:34:56"
-      }
+    Llama a tu módulo de standings, arma el JSON y lo guarda en disco.
     """
     print("[cache] Actualizando cache...")
-    datos = {
-        "standings": [
-            # EJEMPLO — remplázalo por los standings reales
-            {"team": "Yankees", "user": "demo", "played": 15, "wins": 10, "losses": 5, "remaining": 33, "points": 25}
-        ],
-        "games_today": [
-            # EJEMPLO — remplázalo por la lista real de juegos de hoy
-            "Yankees 4 - Red Sox 2 - 06-09-2025 - 11:10 am (hora Chile)"
-        ],
-        "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-    }
-    with open(CACHE_FILE, "w", encoding="utf-8") as f:
-        json.dump(datos, f, ensure_ascii=False, indent=2)
-    print("[cache] OK")
+    try:
+        # Importar aquí para evitar problemas de ciclo de importación
+        import standings_cascade_points_desc as standings
+
+        rows = standings.compute_rows()            # tabla de posiciones
+        juegos_hoy = standings.games_played_today_scl()  # lista de juegos del “día” (según tu config)
+
+        datos = {
+            "standings": rows,
+            "games_today": juegos_hoy,
+            "last_update": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        with open(CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(datos, f, ensure_ascii=False, indent=2)
+        print("[cache] OK")
+    except Exception as e:
+        print(f"[cache] Error: {e}")
 
 def tarea_recurrente():
     """Hilo en segundo plano que refresca el cache cada X minutos."""
     while True:
-        try:
-            actualizar_cache()
-        except Exception as e:
-            print(f"[cache] Error: {e}")
+        actualizar_cache()
         time.sleep(CACHE_INTERVAL_SEC)
 
-# Nota: en Gunicorn no se ejecuta el bloque __main__, por eso usamos este hook.
+# En Gunicorn no se ejecuta el bloque __main__, por eso usamos este hook.
 @app.before_first_request
 def iniciar_hilo_cache():
     # 1) Crear el cache una vez (rápido) para que la página tenga algo que mostrar
@@ -67,7 +60,7 @@ def iniciar_hilo_cache():
 # ==========================
 @app.route("/")
 def index():
-    # Renderiza la plantilla; tu index.html hará fetch a /api/full si así lo tienes
+    # Tu index.html puede hacer fetch a /api/full
     return render_template("index.html")
 
 @app.route("/api/full")
