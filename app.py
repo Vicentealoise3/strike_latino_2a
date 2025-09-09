@@ -26,5 +26,15 @@ def api_full():
     except Exception as e:
         return jsonify({"error": f"Failed to read cached data: {e}"}), 500
 
+
+
+
+
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
+@app.get("/health")
+def health():
+    return {"ok": True}
